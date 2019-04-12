@@ -277,6 +277,10 @@ class SentencePieceTokenizer(object):
         self.independent_tokens = independent_tokens
         if self.independent_tokens is None:
             self.independent_tokens = ['、', '\u2581']
+        
+        self.enabled_sampling = False
+        self.sampling_nbest_size = -1
+        self.sampling_alpha = 0.1
     
     def tokenize(self, text, normalize=False):
         """Tokenizes a piece of text."""
@@ -286,7 +290,14 @@ class SentencePieceTokenizer(object):
         if self.do_lower_case:
             text = text.lower()
         
-        output_tokens = self.tokenizer.EncodeAsPieces(text)
+        if self.enabled_sampling:
+            output_tokens = self.tokenizer.SampleEncodeAsPieces(
+                    text, 
+                    nbest_size=self.sampling_nbest_size, 
+                    alpha=self.sampling_alpha,
+                )
+        else:
+            output_tokens = self.tokenizer.EncodeAsPieces(text)
         output_tokens = self.output_hook(output_tokens)
         return output_tokens
 

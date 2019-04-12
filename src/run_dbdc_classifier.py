@@ -64,6 +64,10 @@ flags.DEFINE_string(
 
 # Other parameters
 
+flags.DEFINE_bool(
+    "token_sampling", False,
+    "If set true, token boundaries are sampled when training")
+
 flags.DEFINE_string(
     "init_checkpoint", None,
     "Initial checkpoint (usually from a pre-trained BERT model).")
@@ -767,8 +771,18 @@ def main(_):
 
   if FLAGS.do_train:
     train_file = os.path.join(FLAGS.output_dir, "train.tf_record")
+    
+    # Augmentation on tokenization
+    if FLAGS.token_sampling:
+        train_examples *= int(FLAGS.num_train_epochs)
+        tokenizer.enabled_sampling = True
+    
     file_based_convert_examples_to_features(
         train_examples, label_list, FLAGS.max_seq_length, tokenizer, train_file)
+    
+    if FLAGS.token_sampling:
+        tokenizer.enabled_sampling = False
+    
     tf.logging.info("***** Running training *****")
     tf.logging.info("  Num examples = %d", len(train_examples))
     tf.logging.info("  Batch size = %d", FLAGS.train_batch_size)
