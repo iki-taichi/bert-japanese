@@ -5,6 +5,134 @@ forked from https://github.com/yoheikikuta/bert-japanese .
 ## Current changes
 - appended optimization.py and modeling.py from original bert repo.
 - ld_corpus.py: a script to download data and to test finetuned model.
+- dbdc_corpus.py: to learn dialog breakdown detectors wtih [dbdc](https://sites.google.com/site/dialoguebreakdowndetection/) and [dbdc2](https://sites.google.com/site/dialoguebreakdowndetection2/) corpus.
+
+## Usage ld_corpus.py and run_dbdc_classifier.py
+```bash
+# Suppose that the current directory is repository root.
+# collecting and editing datasets
+python src/dbdc_cropus.py -m fetch
+# laearning with the dataset
+python src/run_dbdc_classifier.py \
+    --task_name=DBDC \
+    --do_train=true \
+    --do_eval=true \
+    --data_dir=data/dbdc \
+    --model_file=model/wiki-ja-mod.model \
+    --vocab_file=model/wiki-ja-mod.vocab \
+    --init_checkpoint=model/model.ckpt-1400000 \
+    --max_seq_length=512 \
+    --train_batch_size=4 \
+    --learning_rate=2e-5 \
+    --num_train_epochs=10 \
+    --output_dir=model/dbdc_1
+# evaluation
+python src/dbdc_corpus.py -m test -d data/dbdc -p model/dbdc_1
+```
+
+Evaluation with models successfully created will result like this:
+```
+***** RESULT *****
+Test dataset:
+data/dbdc/test.csv
+Tested model:
+model/dbdc_1/model.ckpt-5157
+***** IRS *****
+Accuracy:
+0.5927272727272728
+Detailed report:
+              precision    recall  f1-score   support
+
+           O       0.73      0.60      0.66       216
+           T       0.30      0.38      0.33       103
+           X       0.65      0.68      0.66       231
+
+   micro avg       0.59      0.59      0.59       550
+   macro avg       0.56      0.55      0.55       550
+weighted avg       0.62      0.59      0.60       550
+
+Confusion matrix:
+[[130  41  45]
+ [ 24  39  40]
+ [ 24  50 157]]
+
+Precision (X) :         0.648760 (157/242)
+Recall        (X) :     0.679654 (157/231)
+F-measure (X) :         0.663848
+Precision (T+X) :       0.801075 (298/372)
+Recall        (T+X) :   0.834734 (298/357)
+F-measure (T+X) :       0.817558
+JS divergence (O,T,X) :         0.091804
+JS divergence (O,T+X) :         0.059638
+JS divergence (O+T,X) :         0.060257
+Mean squared error (O,T,X) :    0.050887
+Mean squared error (O,T+X) :    0.061148
+Mean squared error (O+T,X) :    0.064236
+
+***** DIT *****
+Accuracy:
+0.6418181818181818
+Detailed report:
+              precision    recall  f1-score   support
+
+           O       0.76      0.62      0.69       184
+           T       0.28      0.34      0.31       102
+           X       0.74      0.77      0.75       264
+
+   micro avg       0.64      0.64      0.64       550
+   macro avg       0.59      0.58      0.58       550
+weighted avg       0.66      0.64      0.65       550
+
+Confusion matrix:
+[[115  44  25]
+ [ 20  35  47]
+ [ 16  45 203]]
+
+Precision (X) :         0.738182 (203/275)
+Recall        (X) :     0.768939 (203/264)
+F-measure (X) :         0.753247
+Precision (T+X) :       0.907268 (362/399)
+Recall        (T+X) :   0.878641 (362/412)
+F-measure (T+X) :       0.892725
+JS divergence (O,T,X) :         0.043422
+JS divergence (O,T+X) :         0.025578
+JS divergence (O+T,X) :         0.027862
+Mean squared error (O,T,X) :    0.024256
+Mean squared error (O,T+X) :    0.025019
+Mean squared error (O+T,X) :    0.032207
+
+***** DCM *****
+Accuracy:
+0.5363636363636364
+Detailed report:
+              precision    recall  f1-score   support
+
+           O       0.66      0.71      0.69       223
+           T       0.35      0.50      0.41       149
+           X       0.63      0.34      0.44       178
+
+   micro avg       0.54      0.54      0.54       550
+   macro avg       0.55      0.52      0.51       550
+weighted avg       0.57      0.54      0.53       550
+
+Confusion matrix:
+[[159  53  11]
+ [ 49  75  25]
+ [ 32  85  61]]
+
+Precision (X) :         0.628866 (61/97)
+Recall        (X) :     0.342697 (61/178)
+F-measure (X) :         0.443636
+Precision (T+X) :       0.841935 (261/310)
+Recall        (T+X) :   0.727019 (261/359)
+F-measure (T+X) :       0.780269
+JS divergence (O,T,X) :         0.085814
+JS divergence (O,T+X) :         0.054299
+JS divergence (O+T,X) :         0.053763
+Mean squared error (O,T,X) :    0.047948
+Mean squared error (O,T+X) :    0.056797
+Mean squared error (O+T,X) :    0.056800
+```
 
 ## Usage ld_corpus.py
 Suppose that current directory is repository root.
