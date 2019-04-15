@@ -22,10 +22,13 @@ import csv
 
 import tensorflow as tf
 
-import keras
-import keras.layers as L
-from keras.models import Model
-from keras_bert import load_trained_model_from_checkpoint
+import tensorflow.keras as keras
+import tensorflow.keras.layers as L
+from tensorflow.keras.models import Model
+
+import sys
+sys.path.append('thirdparties')
+from tf_keras_bert import load_trained_model_from_checkpoint
 
 
 #import tokenization_sentencepiece
@@ -108,7 +111,7 @@ def build_model(args):
         )
     
     last_hidden_output = trained_bert.get_layer(name=last_hidden_layer_name).output
-    cls_output = L.Lambda(lambda x: x[:,:1])(last_hidden_output)
+    cls_output = L.Lambda(lambda x: x[:,0])(last_hidden_output)
     cls_output = L.Dropout(args.dropout_rate)(cls_output)
     custom_output = L.Dense(len_labels, activation='softmax')(cls_output)
     model = Model(inputs=trained_bert.input,outputs=custom_output)
@@ -126,6 +129,8 @@ def build_model(args):
             loss='kullback_leibler_divergence', 
             metrics=['accuracy'],
         )
+    model.summary(line_length=156)
+    input('end summary')
     
     return model
 
@@ -271,7 +276,7 @@ def from_example_to_features(
     return feature
 
 
-def truncate_tokens(tokens_a, tokens_b, max_length, pop_back_a=False, pop_back_b=False):
+def truncate_tokens(tokens_a, tokens_b, max_length, pop_back_a=True, pop_back_b=False):
 
     if tokens_b:
         # Account for [CLS], [SEP], [SEP] with "- 3"
@@ -443,7 +448,7 @@ def do_train(args, tokenizer, model):
     
     ckpt_path = os.path.join(
             args.output_dir,
-            'weights.{epoch:02d}-{val_loss:.2f}.hdf5', 
+            'weights.{epoch:02d}-{loss:.2f}.hdf5', 
         )
     callback_ckpt = keras.callbacks.ModelCheckpoint(
             ckpt_path,
