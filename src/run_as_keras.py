@@ -28,7 +28,6 @@ from tensorflow.keras.models import Model
 
 import sys
 sys.path.append('thirdparties')
-from tf_keras_bert import load_trained_model_from_checkpoint
 
 
 #import tokenization_sentencepiece
