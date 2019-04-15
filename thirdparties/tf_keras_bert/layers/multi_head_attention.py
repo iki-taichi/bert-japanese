@@ -67,8 +67,6 @@ class MultiHeadAttention(keras.layers.Layer):
         return dict(list(base_config.items()) + list(config.items()))
 
     def compute_output_shape(self, input_shape):
-        print('compute', self.name, input_shape, type(input_shape))
-        input()
         if isinstance(input_shape, list):
             q, k, v = input_shape
             return q[:-1] + (int(v[-1]),)
@@ -80,8 +78,6 @@ class MultiHeadAttention(keras.layers.Layer):
         return input_mask
 
     def build(self, input_shape):
-        print('build', self.name, input_shape, type(input_shape))
-        input()
         if isinstance(input_shape, list):
             q, k, v = input_shape
         else:
@@ -217,14 +213,11 @@ class MultiHeadAttention(keras.layers.Layer):
                 self._reshape_mask(v_mask, self.head_num),
             ],
         )
-        print('inputs', type(inputs))
-        print(y.shape)
         y = self._reshape_from_batches(y, self.head_num)
         y = K.dot(y, self.Wo)
         if self.use_bias:
             y += self.bo
         if self.activation is not None:
             y = self.activation(y)
-        print('call input', self.name, inputs.shape, q.shape, k.shape, v.shape)
-        print('call output', self.name, y.shape)
+        
         return y

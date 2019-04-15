@@ -27,8 +27,9 @@ import tensorflow.keras.layers as L
 from tensorflow.keras.models import Model
 
 import sys
-sys.path.append('thirdparties')
-
+repo_path = os.path.dirname(os.path.dirname(__file__))
+sys.path.append(os.path.join(repo_path, 'thirdparties'))
+from tf_keras_bert import load_trained_model_from_checkpoint
 
 #import tokenization_sentencepiece
 import tokenization_sp_mod as tokenization
@@ -129,7 +130,6 @@ def build_model(args):
             metrics=['accuracy'],
         )
     model.summary(line_length=156)
-    input('end summary')
     
     return model
 

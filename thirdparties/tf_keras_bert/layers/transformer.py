@@ -34,7 +34,6 @@ def _wrap_layer(name, input_layer, build_func, dropout_rate=0.0, trainable=True)
     :param trainable: Whether the layers are trainable.
     :return: Output layer.
     """
-    print('wrap', input_layer)
     build_output = build_func(input_layer)
     if dropout_rate > 0.0:
         dropout_layer = keras.layers.Dropout(
