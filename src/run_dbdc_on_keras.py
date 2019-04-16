@@ -379,21 +379,21 @@ def get_example_iterator(
         
         return inputs, target, weight
     
-    d = tf.data.TFRecordDataset(input_file)
+    with tf.Session() as dataset_session:
+        d = tf.data.TFRecordDataset(input_file)
+        
+        if is_training:
+            d = d.repeat()
+            d = d.shuffle(buffer_size=100)
     
-    if is_training:
-        d = d.repeat()
-        d = d.shuffle(buffer_size=100)
-    
-    d = d.map(decode_record)
-    d = d.batch(
-            batch_size=batch_size,
-            drop_remainder=drop_remainder
-        )
-    #return d
-    next_batch = d.make_one_shot_iterator().get_next()
-    while True:
-        yield tf.keras.backend.get_session().run(next_batch)
+        d = d.map(decode_record)
+        d = d.batch(
+                batch_size=batch_size,
+                drop_remainder=drop_remainder
+            )
+        next_batch = d.make_one_shot_iterator().get_next()
+        while True:
+            yield dataset_session.run(next_batch)
 
 
 def padding_examples(examples, batch_size):
