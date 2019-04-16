@@ -119,12 +119,13 @@ def build_model(args):
     custom_output = L.Dense(len_labels, activation='softmax')(cls_output)
     model = Model(inputs=trained_bert.input,outputs=custom_output)
    
-    optimizer = keras.optimizers.Adam(
-            lr=args.learning_rate,
-            beta_1=0.9, 
-            beta_2=0.999, 
-            decay=0.0, 
-        )
+    #optimizer = keras.optimizers.Adam(
+    #        lr=args.learning_rate,
+    #        beta_1=0.9, 
+    #        beta_2=0.999, 
+    #        decay=0.0, 
+    #    )
+    optimizer = tf.train.AdamOptimizer(args.learning_rate)
     model.compile(
             optimizer=optimizer, 
             loss='kullback_leibler_divergence', 
