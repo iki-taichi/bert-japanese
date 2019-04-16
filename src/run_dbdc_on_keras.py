@@ -104,6 +104,7 @@ def build_model(args):
     last_hidden_layer_name = 'Encoder-%d-FeedForward-Norm'%(
                 bert_config['num_hidden_layers']
             )
+    use_layer_name = args.use_kayer_name or last_hidden_layer_name
     len_labels = len(args.processor.get_labels())
     
     trained_bert = load_trained_model_from_checkpoint(
@@ -112,7 +113,7 @@ def build_model(args):
             training=True,
         )
     
-    last_hidden_output = trained_bert.get_layer(name=last_hidden_layer_name).output
+    last_hidden_output = trained_bert.get_layer(name=use_layer_name).output
     cls_output = L.Lambda(lambda x: x[:, 0])(last_hidden_output)
     cls_output = L.Dropout(args.dropout_rate)(cls_output)
     custom_output = L.Dense(len_labels, activation='softmax')(cls_output)
@@ -602,6 +603,7 @@ class Dummy(object):
     vocab_file = 'model/wiki-ja-mod.vocab'
     data_dir = 'data/dbdc'
     bert_config_path = 'config.json'
+    use_layer_name = None
     max_seq_length=512
     train_batch_size=4
     eval_batch_size=4
