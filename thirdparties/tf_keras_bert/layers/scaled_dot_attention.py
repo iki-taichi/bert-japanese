@@ -72,3 +72,31 @@ class ScaledDotProductAttention(keras.layers.Layer):
         if self.return_attention:
             return [v, a]
         return v
+
+def scaled_dot_product_attention(inputs, mask=None, return_attention=False, history_only=False):
+    if isinstance(inputs, list):
+        query, key, value = inputs
+    else:
+        query = key = value = inputs
+    
+    if isinstance(mask, list):
+        mask = mask[1]
+    
+    feature_dim = K.shape(query)[-1]
+    e = K.batch_dot(query, key, axes=2) / K.sqrt(K.cast(feature_dim, dtype=K.floatx()))
+    
+    if history_only:
+        query_len, key_len = K.shape(query)[1], K.shape(key)[1]
+        ones = tf.ones((query_len, key_len))
+        e -= (ones - tf.matrix_band_part(ones, -1, 0)) * 1e9
+    
+    if mask is not None:
+        e -= (1.0 - K.cast(K.expand_dims(mask, axis=-2), K.floatx())) * 1e9
+    
+    a = keras.activations.softmax(e)
+    v = K.batch_dot(a, value)
+    
+    if return_attention:
+        return [v, a]
+    return v
+

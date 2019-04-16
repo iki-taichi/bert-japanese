@@ -12,7 +12,7 @@ from .feed_forward import FeedForward
 # keras-self-attention
 from .seq_self_attention import SeqSelfAttention
 from .seq_weighted_attention import SeqWeightedAttention
-from .scaled_dot_attention import ScaledDotProductAttention
+from .scaled_dot_attention import scaled_dot_product_attention
 
 # keras-multi-head
 from .multi_head import MultiHead

@@ -111,7 +111,7 @@ def build_model(args):
         )
     
     last_hidden_output = trained_bert.get_layer(name=last_hidden_layer_name).output
-    cls_output = L.Lambda(lambda x: x[:,0])(last_hidden_output)
+    cls_output = L.Lambda(lambda x: x[:, 0])(last_hidden_output)
     cls_output = L.Dropout(args.dropout_rate)(cls_output)
     custom_output = L.Dense(len_labels, activation='softmax')(cls_output)
     model = Model(inputs=trained_bert.input,outputs=custom_output)
@@ -610,5 +610,13 @@ class Dummy(object):
 if __name__ == "__main__":
     args = Dummy()
     args.processor = DefaultProcessor()
+    
+    session_config = tf.ConfigProto()
+    session_config.gpu_options.per_process_gpu_memory_fraction = 0.95
+    session_config.gpu_options.allocator_type = "BFC"
+    # session_config.gpu_options.allow_growth = True
+    session = tf.Session(config=session_config)
+    tf.keras.backend.set_session(session)
+    
     main(args)
 
