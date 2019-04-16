@@ -462,7 +462,7 @@ def do_train(args, tokenizer, model):
             verbose=1, 
         )    
     
-    model.fit(
+    model.fit_generator(
             example_iterator,
             steps_per_epoch= len(train_examples) // args.train_batch_size,
             epochs=int(args.num_train_epochs),
