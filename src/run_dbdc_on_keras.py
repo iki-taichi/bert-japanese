@@ -31,6 +31,7 @@ import sys
 repo_path = os.path.dirname(os.path.dirname(__file__))
 sys.path.append(os.path.join(repo_path, 'thirdparties'))
 from tf_keras_bert import load_trained_model_from_checkpoint
+from tf_keras_bert import get_custom_objects
 
 #import tokenization_sentencepiece
 import tokenization_sp_mod as tokenization
@@ -121,9 +122,7 @@ def build_model(args):
             lr=args.learning_rate,
             beta_1=0.9, 
             beta_2=0.999, 
-            epsilon=None, 
             decay=0.0, 
-            amsgrad=False
         )
     model.compile(
             optimizer=optimizer, 
@@ -571,9 +570,13 @@ def main(args):
     model = build_model(args)
     
     if args.use_tpu:
-        tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(args.tpu_grpc_url)
-        strategy = keras_support.TPUDistributionStrategy(tpu_cluster_resolver)
-        model = tf.contrib.tpu.keras_to_tpu_model(model, strategy=strategy)
+        # specification custom objects used in construction of the model is required 
+        # because the model seems to be serialized when sending TPU
+        # So we use custom object scope here
+        with tf.keras.utils.custom_object_scope(get_custom_objects()):
+            tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(args.tpu_grpc_url)
+            strategy = keras_support.TPUDistributionStrategy(tpu_cluster_resolver)
+            model = tf.contrib.tpu.keras_to_tpu_model(model, strategy=strategy)
     
     if args.do_train:
         do_train(args, tokenizer, model)
