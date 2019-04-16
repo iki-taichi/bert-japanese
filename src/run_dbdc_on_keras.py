@@ -390,8 +390,10 @@ def get_example_iterator(
             batch_size=batch_size,
             drop_remainder=drop_remainder
         )
-    
-    return d
+    #return d
+    next_batch = d.make_one_shot_iterator().get_next()
+    while True:
+        yield tf.keras.backend.get_session().run(next_batch)
 
 
 def padding_examples(examples, batch_size):
