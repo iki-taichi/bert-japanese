@@ -25,6 +25,7 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as L
 from tensorflow.keras.models import Model
+from tensorflow.contrib.tpu.python.tpu import keras_support
 
 import sys
 repo_path = os.path.dirname(os.path.dirname(__file__))
