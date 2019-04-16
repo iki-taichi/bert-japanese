@@ -553,6 +553,10 @@ def do_eval(args, mode, tokenizer, model):
 
 
 def main(args):
+    
+    if not hasattr(args, 'processor'):
+        args.processor = DefaultProcessor()
+    
     tf.logging.set_verbosity(tf.logging.INFO)
     
     tokenization.validate_case_matches_checkpoint(
@@ -567,25 +571,27 @@ def main(args):
             vocab_file=args.vocab_file,
             do_lower_case=args.do_lower_case
        )
-    model = build_model(args)
     
-    if args.use_tpu:
-        # specification custom objects used in construction of the model is required 
-        # because the model seems to be serialized when sending TPU
-        # So we use custom object scope here
-        with tf.keras.utils.custom_object_scope(get_custom_objects()):
+    # Specification of the custom objects used in model construction is required 
+    # because the model seems to be serialized when sending TPU
+    # So we use custom object scope here
+    with tf.keras.utils.custom_object_scope(get_custom_objects()):
+        
+        model = build_model(args)
+    
+        if args.use_tpu:
             tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(args.tpu_grpc_url)
             strategy = keras_support.TPUDistributionStrategy(tpu_cluster_resolver)
             model = tf.contrib.tpu.keras_to_tpu_model(model, strategy=strategy)
     
-    if args.do_train:
-        do_train(args, tokenizer, model)
+        if args.do_train:
+            do_train(args, tokenizer, model)
     
-    if args.do_dev:
-        do_eval(args, 'dev', tokenizer, model)
+        if args.do_dev:
+            do_eval(args, 'dev', tokenizer, model)
     
-    if args.do_test:
-        do_eval(args, 'test', tokenizer, model)
+        if args.do_test:
+            do_eval(args, 'test', tokenizer, model)
 
 
 class Dummy(object):
@@ -613,7 +619,6 @@ class Dummy(object):
 
 if __name__ == "__main__":
     args = Dummy()
-    args.processor = DefaultProcessor()
     
     session_config = tf.ConfigProto()
     session_config.gpu_options.per_process_gpu_memory_fraction = 0.95
