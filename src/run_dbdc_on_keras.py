@@ -104,7 +104,7 @@ def build_model(args):
     last_hidden_layer_name = 'Encoder-%d-FeedForward-Norm'%(
                 bert_config['num_hidden_layers']
             )
-    use_layer_name = args.use_kayer_name or last_hidden_layer_name
+    use_layer_name = args.use_layer_name or last_hidden_layer_name
     len_labels = len(args.processor.get_labels())
     
     trained_bert = load_trained_model_from_checkpoint(
@@ -332,7 +332,7 @@ def write_examples_as_tfrecord(
             features["input_mask"] = create_int_feature(feats.input_mask)
             features["segment_ids"] = create_int_feature(feats.segment_ids)
             features["label"] = create_float_feature(feats.label)
-            features["is_real_example"] = create_int_feature([int(feats.is_real_example)])
+            features["is_real_example"] = create_float_feature([float(feats.is_real_example)])
 
             tf_example = tf.train.Example(features=tf.train.Features(feature=features))
             writer.write(tf_example.SerializeToString())
@@ -357,7 +357,7 @@ def get_example_iterator(
             "input_mask": tf.FixedLenFeature([seq_length], tf.int64),
             "segment_ids": tf.FixedLenFeature([seq_length], tf.int64),
             "label": tf.FixedLenFeature([num_labels], tf.float32),
-            "is_real_example": tf.FixedLenFeature([1], tf.int64),
+            "is_real_example": tf.FixedLenFeature([1], tf.float32),
         }
     
     def decode_record(record):
@@ -391,7 +391,7 @@ def get_example_iterator(
             drop_remainder=drop_remainder
         )
     
-    return d.make_one_shot_iterator()
+    return d
 
 
 def padding_examples(examples, batch_size):
@@ -435,8 +435,8 @@ def do_train(args, tokenizer, model):
             is_training=True,
         )
     
-    _inputs, _target, _sample_weight = example_iterator.get_next()
-    _sample_weight.ndim = 1
+    #_inputs, _target, _sample_weight = example_iterator.get_next()
+    #_sample_weight.ndim = 1
 
     tf.logging.info("***** Running training *****")
     tf.logging.info("  Num examples = %d (%d actual, %d padding)",
@@ -461,9 +461,7 @@ def do_train(args, tokenizer, model):
         )    
     
     model.fit(
-            x=_inputs,
-            y=_target,
-            sample_weight=[_sample_weight],
+            example_iterator,
             steps_per_epoch= len(train_examples) // args.train_batch_size,
             epochs=int(args.num_train_epochs),
             callbacks=[callback_ckpt],
@@ -628,6 +626,5 @@ if __name__ == "__main__":
     # session_config.gpu_options.allow_growth = True
     session = tf.Session(config=session_config)
     tf.keras.backend.set_session(session)
-    
     main(args)
 
